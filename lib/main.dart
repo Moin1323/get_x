@@ -5,6 +5,7 @@ import 'package:getx/utils.dart';
 
 void main() async {
   await registerServices();
+  await registerControllers();
   runApp(const MyApp());
 }
 

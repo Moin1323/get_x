@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getx/controllers/assets_controller.dart';
+import 'package:getx/models/api_response.dart';
 import 'package:getx/services/http_service.dart';
-import 'package:intl/intl.dart';
 
 class FeaturesButton extends StatelessWidget {
   final String text;
@@ -44,6 +45,9 @@ class FeaturesButton extends StatelessWidget {
 
 class FeatureDialogController extends GetxController {
   RxBool loading = false.obs;
+  RxList<String> assets = <String>[].obs;
+  RxString selectedAsset = "".obs;
+  RxDouble assetValue = 0.0.obs;
 
   @override
   void onInit() {
@@ -55,7 +59,16 @@ class FeatureDialogController extends GetxController {
     loading.value = true;
     HttpService httpService = Get.find();
     var responseData = await httpService.get("currencies");
-    print(responseData);
+    CurrenciesListAPIResponse currenciesListAPIResponse =
+        CurrenciesListAPIResponse.fromJson(responseData);
+    currenciesListAPIResponse.data?.forEach(
+      (coin) {
+        assets.add(
+          coin.name!,
+        );
+      },
+    );
+    selectedAsset.value = assets.first;
     loading.value = false;
   }
 }
@@ -70,76 +83,94 @@ class FeatureDialog extends StatefulWidget {
 }
 
 class _FeatureDialogState extends State<FeatureDialog> {
-  final FeatureDialogController controller =
-      Get.find(); // Use the controller instance properly
-
-  DateTime? selectedDate;
-
-  Future<void> _selectDate() async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-
-    if (pickedDate != null) {
-      setState(() {
-        selectedDate = pickedDate;
-      });
-    }
-  }
+  final FeatureDialogController controller = Get.find();
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => AlertDialog(
-        title: Text(widget.mode),
-        content: contentColumn(),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text("Cancel"),
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.4,
+          child: Obx(
+            () => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.mode,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: contentColumn(context),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        AssetsController assetsController = Get.find();
+                        assetsController.addTrackedAsset(
+                          controller.selectedAsset.value,
+                          controller.assetValue.value,
+                        );
+                        Get.back();
+                      },
+                      child: const Text("Save"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              // Add your action here
-              Get.back();
-            },
-            child: const Text("Save"),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget contentColumn() {
+  Widget contentColumn(BuildContext contex) {
     return controller.loading.isTrue
         ? const Center(
             child: CircularProgressIndicator(),
           )
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: "Amount",
-                  suffixIcon: Icon(Icons.attach_money),
+        : Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: controller.selectedAsset.value,
+                  items: controller.assets.map((asset) {
+                    return DropdownMenuItem<String>(
+                      value: asset,
+                      child: Text(asset),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.selectedAsset.value = value;
+                    }
+                  },
                 ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                readOnly: true,
-                onTap: _selectDate,
-                decoration: InputDecoration(
-                  hintText: selectedDate != null
-                      ? DateFormat('dd MMMM yyyy').format(selectedDate!)
-                      : "Select Date",
-                  suffixIcon: const Icon(Icons.date_range),
+                const SizedBox(height: 16),
+                TextField(
+                  onChanged: (value) {
+                    controller.assetValue.value = double.parse(value);
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: "Amount",
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
   }
 }
