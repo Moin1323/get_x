@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:getx/models/pages/home_page.dart';
+import 'package:getx/pages/home_page.dart';
+import 'package:getx/utils.dart';
 
-void main() {
+void main() async {
+  await registerServices();
   runApp(const MyApp());
 }
 
