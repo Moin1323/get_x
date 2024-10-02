@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:getx/controllers/assets_controller.dart';
 import 'package:getx/models/coin_data.dart';
+import 'package:getx/models/tracked_asset.dart';
 import 'package:getx/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -33,7 +36,7 @@ class CoinDetailPage extends StatelessWidget {
             children: [
               // Top Container for Image
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.only(top: 30),
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.3,
                 decoration: BoxDecoration(
@@ -41,22 +44,44 @@ class CoinDetailPage extends StatelessWidget {
                     image: NetworkImage(
                       getCryptoImageUrl(coinData.name!),
                     ),
-                    fit: BoxFit.fitHeight,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
+                  alignment: Alignment.topCenter,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          // Call the removeTrackedAsset method from the controller
+                          AssetsController assetsController = Get.find();
+
+                          // Assuming there is a way to map or retrieve TrackedAsset from CoinData
+                          TrackedAsset asset = assetsController
+                              .getTrackedAssetByName(coinData.name!);
+
+                          // Remove the asset
+                          assetsController.removeTrackedAsset(asset);
+
+                          // Navigate back after deletion
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),

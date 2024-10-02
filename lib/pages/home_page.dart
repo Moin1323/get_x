@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getx/controllers/assets_controller.dart';
-import 'package:getx/models/coin_data.dart';
 import 'package:getx/pages/coin_detail_page.dart';
 import 'package:getx/utils.dart';
 import 'package:getx/widgets/features_button.dart';
@@ -49,7 +48,7 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 10),
                   StreamBuilder<Object>(
                       stream: null,
                       builder: (context, snapshot) {
@@ -155,11 +154,13 @@ Widget buildAssetList(BuildContext context, AssetsController assetsController) {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.65,
+            height: (assetsController.trackedAssets.length * 80).toDouble() >
+                    MediaQuery.of(context).size.height * 0.65
+                ? MediaQuery.of(context).size.height * 0.65
+                : (assetsController.trackedAssets.length * 80).toDouble(),
             child: ListView.builder(
               padding: EdgeInsets.zero,
-              itemCount: assetsController
-                  .trackedAssets.length, // Use assetsController to get data
+              itemCount: assetsController.trackedAssets.length,
               itemBuilder: (context, index) {
                 final asset = assetsController.trackedAssets[index];
                 return InkWell(
@@ -175,20 +176,19 @@ Widget buildAssetList(BuildContext context, AssetsController assetsController) {
                       height: 50,
                       width: 50,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.white,
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              getCryptoImageUrl(
-                                asset.name!,
-                              ),
-                            ),
-                          )),
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.white,
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            getCryptoImageUrl(asset.name!),
+                          ),
+                        ),
+                      ),
                     ),
                     title: Text(
                       asset.name ?? "",
                       style: GoogleFonts.poppins(
-                        color: Colors.white, // White for text
+                        color: Colors.white,
                         fontSize: 20,
                       ),
                     ),
@@ -215,13 +215,13 @@ Widget buildAssetList(BuildContext context, AssetsController assetsController) {
                       ],
                     ),
                     trailing: Text(
-                      asset.amount!.toStringAsFixed(1).toString(),
+                      asset.amount!.toStringAsFixed(1),
                       style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    // Add other widgets based on your asset model
                   ),
                 );
               },

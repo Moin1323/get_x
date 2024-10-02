@@ -31,16 +31,55 @@ class AssetsController extends GetxController {
   }
 
   void addTrackedAsset(String name, double amount) async {
-    trackedAssets.add(TrackedAsset(
-      name: name,
-      amount: amount,
-    ));
+    // Check if the asset already exists in the list
+    int existingIndex = trackedAssets.indexWhere((asset) => asset.name == name);
+
+    if (existingIndex != -1) {
+      // If the asset exists, update the amount
+      trackedAssets[existingIndex].amount =
+          trackedAssets[existingIndex].amount! + amount;
+      trackedAssets.refresh(); // Refresh to notify listeners
+    } else {
+      // If it doesn't exist, add it as a new asset
+      trackedAssets.add(TrackedAsset(
+        name: name,
+        amount: amount,
+      ));
+    }
+
+    // Save the updated list to SharedPreferences
     List<String> data =
         trackedAssets.map((asset) => jsonEncode(asset)).toList();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList("tracked_assets", data);
 
+    // Trigger an update to the UI
+    trackedAssets.refresh();
+  }
+
+  void removeTrackedAsset(TrackedAsset asset) async {
+    // Step 1: Remove the asset from the trackedAssets list
+    trackedAssets.remove(asset);
+
+    // Step 2: Update SharedPreferences by removing the asset
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    await prefs.setStringList("tracked_assets", data);
+    // Retrieve the stored tracked assets from SharedPreferences
+    List<String> storedAssets = prefs.getStringList("tracked_assets") ?? [];
+
+    // Find the corresponding asset in SharedPreferences and remove it
+    storedAssets.removeWhere((item) {
+      // Decode the stored item
+      Map<String, dynamic> storedAsset = jsonDecode(item);
+
+      // Match based on the asset's name or any other unique property
+      return storedAsset["name"] == asset.name;
+    });
+
+    // Update SharedPreferences with the updated list
+    await prefs.setStringList("tracked_assets", storedAssets);
+
+    trackedAssets.refresh();
   }
 
   void _loadTrackedAssetsFromStorage() async {
@@ -76,5 +115,10 @@ class AssetsController extends GetxController {
 
   CoinData? getCoinData(String name) {
     return coinData.firstWhereOrNull((e) => e.name == name);
+  }
+
+  // Method to get a TrackedAsset by name
+  TrackedAsset getTrackedAssetByName(String name) {
+    return trackedAssets.firstWhere((asset) => asset.name == name);
   }
 }
