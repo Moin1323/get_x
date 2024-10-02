@@ -164,12 +164,9 @@ Widget buildAssetList(BuildContext context, AssetsController assetsController) {
                 final asset = assetsController.trackedAssets[index];
                 return InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CoinDetailPage(
-                            coinData:
-                                CoinData()), // Pass the asset data to CoinDetailPage
+                    Get.to(
+                      CoinDetailPage(
+                        coinData: assetsController.getCoinData(asset.name!)!,
                       ),
                     );
                   },

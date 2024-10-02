@@ -33,11 +33,15 @@ class CoinDetailPage extends StatelessWidget {
             children: [
               // Top Container for Image
               Container(
+                padding: const EdgeInsets.all(10),
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.3,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(getCryptoImageUrl("bitcoin")),
+                    image: NetworkImage(
+                      getCryptoImageUrl(coinData.name!),
+                    ),
+                    fit: BoxFit.fitHeight,
                   ),
                 ),
                 child: Align(
@@ -73,7 +77,7 @@ class CoinDetailPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "BitCoin",
+                      coinData.name!,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 28,
@@ -82,76 +86,43 @@ class CoinDetailPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Row(
-                      children: [
-                        Text(
-                          "\$ ",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "300",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Displaying additional details
-                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
                             Text(
-                              "Amount Held:",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.6),
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              "20",
+                              "\$ ",
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              coinData.values!.uSD!.price!.toStringAsFixed(2),
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Value:",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.6),
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              "\$ 200",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          "${coinData.values!.uSD!.percentChange24h!.toStringAsFixed(2)} % ",
+                          style: GoogleFonts.poppins(
+                            color: coinData.values!.uSD!.percentChange24h! > 0
+                                ? Colors.green
+                                : Colors.red,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    // Any other details about the coin can be added here
+
+                    _assetInfo(context, coinData), // Pass coinData here
+
                     Text(
                       "Last Updated: ${DateFormat('EEEE, d MMMM').format(DateTime.now())}",
                       style: GoogleFonts.poppins(
@@ -168,4 +139,68 @@ class CoinDetailPage extends StatelessWidget {
       ),
     );
   }
+}
+
+// Pass coinData to _assetInfo
+Widget _assetInfo(BuildContext context, CoinData coinData) {
+  return Expanded(
+    child: GridView(
+      padding: EdgeInsets.zero,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.9,
+      ),
+      children: [
+        _infoCard(
+          "Circulating Supply",
+          coinData.circulatingSupply?.toStringAsFixed(2) ??
+              'N/A', // Check for null
+        ),
+        _infoCard(
+          "Maximum Supply",
+          coinData.maxSupply?.toStringAsFixed(2) ?? 'N/A', // Check for null
+        ),
+        _infoCard(
+          "Total Supply",
+          coinData.totalSupply?.toStringAsFixed(0) ?? 'N/A', // Check for null
+        ),
+
+        // Add more cards as needed for other data points
+      ],
+    ),
+  );
+}
+
+// Create the _infoCard widget to display information
+Widget _infoCard(String title, String subTitle) {
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.grey[800], // Dark grey background
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          textAlign: TextAlign.center,
+          title,
+          style: GoogleFonts.poppins(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          subTitle,
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }
