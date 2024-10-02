@@ -13,3 +13,10 @@ Future<void> registerControllers() async {
     AssetsController(),
   );
 }
+
+String getCryptoImageUrl(String name) {
+  // Remove spaces and convert the name to lowercase
+  String formattedName = name.replaceAll(' ', '').toLowerCase();
+
+  return "https://raw.githubusercontent.com/ErikThiart/cryptocurrency-icons/master/128/$formattedName.png";
+}
